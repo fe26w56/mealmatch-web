@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("user") // "admin" or "user"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expenses  Expense[]
+  incomes   Income[]
+  categories Category[]
+  sessions  Session[]
+  savedRecipes SavedRecipe[]
+  mealPlans MealPlan[]
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  amount      Float
+  description String?
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  categoryId  String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    Category @relation(fields: [categoryId], references: [id])
+}
+
+model Income {
+  id          String   @id @default(uuid())
+  amount      Float
+  description String?
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  categoryId  String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category    Category @relation(fields: [categoryId], references: [id])
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String
+  type        String    // "expense" or "income"
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses    Expense[]
+  incomes     Income[]
+}
+
+model SavedRecipe {
+  id          String   @id @default(uuid())
+  recipeId    String   // 楽天レシピのID
+  recipeTitle String
+  recipeUrl   String
+  foodImageUrl String?
+  recipeDescription String?
+  recipeMaterial String? // JSON文字列として保存
+  recipeIndication String? // 調理時間
+  recipeInstructions String? // 作り方・手順
+  shopName    String?
+  userId      String
+  liked       Boolean  @default(true) // true: いいね, false: いいえ
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mealPlans   MealPlanRecipe[]
+
+  @@unique([userId, recipeId])
+}
+
+model MealPlan {
+  id        String   @id @default(uuid())
+  userId    String
+  weekStart DateTime // その週の月曜日
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipes   MealPlanRecipe[]
+}
+
+model MealPlanRecipe {
+  id           String      @id @default(uuid())
+  mealPlanId   String
+  savedRecipeId String
+  dayOfWeek    Int         // 0=月曜日, 1=火曜日, ..., 6=日曜日
+  mealType     String      // "breakfast", "lunch", "dinner"
+  mealPlan     MealPlan    @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+  savedRecipe  SavedRecipe @relation(fields: [savedRecipeId], references: [id], onDelete: Cascade)
+
+  @@unique([mealPlanId, dayOfWeek, mealType])
+}

@@ -1,0 +1,15 @@
+{
+  "/api/recipes/route": "app/api/recipes/route.js",
+  "/api/admin/users/route": "app/api/admin/users/route.js",
+  "/api/auth/me/route": "app/api/auth/me/route.js",
+  "/api/saved-recipes/route": "app/api/saved-recipes/route.js",
+  "/api/admin/stats/route": "app/api/admin/stats/route.js",
+  "/api/admin/recipes/route": "app/api/admin/recipes/route.js",
+  "/api/meal-plans/route": "app/api/meal-plans/route.js",
+  "/users/page": "app/users/page.js",
+  "/auth/login/page": "app/auth/login/page.js",
+  "/page": "app/page.js",
+  "/swipe/page": "app/swipe/page.js",
+  "/plan/page": "app/plan/page.js",
+  "/settings/page": "app/settings/page.js"
+}

@@ -1,0 +1,234 @@
+# MealMatch Web Application - TODO List
+
+project:
+  name: "MealMatch"
+  description: "楽天レシピAPIを活用した料理レシピ管理・献立計画アプリケーション"
+  version: "1.0.0"
+  last_updated: "2024-12-19"
+
+# 完了済みタスク
+completed:
+  backend:
+    - task: "Prismaデータベーススキーマ設計"
+      description: "User, SavedRecipe, MealPlan, MealPlanRecipeテーブルの設計"
+      completed_date: "2024-12-19"
+      priority: "high"
+    
+    - task: "楽天レシピAPI統合"
+      description: "カテゴリ別・キーワード別レシピ取得機能"
+      completed_date: "2024-12-19"
+      priority: "high"
+    
+    - task: "大量レシピデータ取得システム"
+      description: "24カテゴリ×85キーワードから800+レシピ取得"
+      completed_date: "2024-12-19"
+      priority: "high"
+    
+    - task: "APIレート制限対応"
+      description: "429エラー時の自動再試行機能"
+      completed_date: "2024-12-19"
+      priority: "medium"
+    
+    - task: "管理者認証システム"
+      description: "パスワードハッシュ化・セッション管理"
+      completed_date: "2024-12-19"
+      priority: "high"
+    
+    - task: "シードスクリプト作成"
+      description: "楽天API・モックデータ両対応"
+      completed_date: "2024-12-19"
+      priority: "medium"
+
+  frontend:
+    - task: "Next.js基本構造構築"
+      description: "App Router、Tailwind CSS、Radix UI設定"
+      completed_date: "2024-12-19"
+      priority: "high"
+    
+    - task: "基本UIコンポーネント"
+      description: "ボタン、カード、フォームなどの基本コンポーネント"
+      completed_date: "2024-12-19"
+      priority: "medium"
+
+# 進行中タスク
+in_progress:
+  frontend:
+    - task: "レシピ一覧ページ改善"
+      description: "グリッドレイアウト、画像表示、ページネーション"
+      assignee: "developer"
+      priority: "high"
+      estimated_hours: 8
+      progress: 60
+      
+    - task: "レシピ詳細ページ"
+      description: "材料表示、調理手順、お気に入り機能"
+      assignee: "developer"
+      priority: "high"
+      estimated_hours: 12
+      progress: 30
+    
+    - task: "検索・フィルタリング機能"
+      description: "キーワード検索、カテゴリフィルター"
+      assignee: "developer"
+      priority: "medium"
+      estimated_hours: 10
+      progress: 20
+
+  backend:
+    - task: "レシピAPI最適化"
+      description: "ページネーション、検索クエリ最適化"
+      assignee: "developer"
+      priority: "medium"
+      estimated_hours: 6
+      progress: 40
+
+# 計画中タスク（優先度順）
+planned:
+  high_priority:
+    - task: "ユーザー認証システム"
+      description: "ユーザー登録、ログイン、セッション管理"
+      estimated_hours: 20
+      dependencies: ["管理者認証システム"]
+      
+    - task: "献立計画機能"
+      description: "週間カレンダー、レシピ割り当て、保存機能"
+      estimated_hours: 24
+      dependencies: ["ユーザー認証システム"]
+      
+    - task: "お気に入りレシピ管理"
+      description: "レシピ保存、削除、一覧表示"
+      estimated_hours: 12
+      dependencies: ["ユーザー認証システム"]
+
+  medium_priority:
+    - task: "レスポンシブデザイン"
+      description: "モバイル・タブレット対応"
+      estimated_hours: 16
+      
+    - task: "レシピ推薦システム"
+      description: "ユーザーの好みに基づく推薦アルゴリズム"
+      estimated_hours: 32
+      dependencies: ["ユーザー認証システム", "お気に入りレシピ管理"]
+      
+    - task: "管理者ダッシュボード"
+      description: "統計情報、レシピ管理、ユーザー管理"
+      estimated_hours: 20
+      
+    - task: "データ同期機能"
+      description: "楽天APIからの定期的なデータ更新"
+      estimated_hours: 12
+
+  low_priority:
+    - task: "ソーシャル機能"
+      description: "レシピ共有、コメント、評価"
+      estimated_hours: 40
+      dependencies: ["ユーザー認証システム"]
+      
+    - task: "栄養管理機能"
+      description: "カロリー計算、栄養バランス分析"
+      estimated_hours: 28
+      
+    - task: "PWA対応"
+      description: "オフライン機能、プッシュ通知"
+      estimated_hours: 16
+      
+    - task: "多言語対応"
+      description: "英語、中国語、韓国語対応"
+      estimated_hours: 24
+
+# バグ・改善点
+bugs_and_improvements:
+  bugs:
+    - issue: "Prismaクライアントのlintエラー"
+      description: "savedRecipeプロパティが認識されない問題"
+      priority: "medium"
+      status: "investigating"
+      
+  improvements:
+    - issue: "API応答時間の最適化"
+      description: "大量データ取得時のパフォーマンス改善"
+      priority: "medium"
+      
+    - issue: "エラーハンドリング強化"
+      description: "ユーザーフレンドリーなエラーメッセージ"
+      priority: "low"
+
+# 技術的負債
+technical_debt:
+  - item: "TypeScript型定義の整理"
+    description: "APIレスポンス型、コンポーネントProps型の統一"
+    priority: "medium"
+    estimated_hours: 8
+    
+  - item: "テストコード追加"
+    description: "ユニットテスト、統合テストの実装"
+    priority: "high"
+    estimated_hours: 32
+    
+  - item: "コードリファクタリング"
+    description: "重複コードの削除、関数分割"
+    priority: "low"
+    estimated_hours: 12
+
+# マイルストーン
+milestones:
+  - name: "MVP (Minimum Viable Product)"
+    target_date: "2024-12-31"
+    description: "基本的なレシピ閲覧・検索機能"
+    tasks:
+      - "レシピ一覧ページ改善"
+      - "レシピ詳細ページ"
+      - "検索・フィルタリング機能"
+      - "レスポンシブデザイン"
+    
+  - name: "ユーザー機能リリース"
+    target_date: "2025-01-15"
+    description: "ユーザー登録・ログイン・お気に入り機能"
+    tasks:
+      - "ユーザー認証システム"
+      - "お気に入りレシピ管理"
+      - "ユーザープロフィール"
+    
+  - name: "献立計画機能リリース"
+    target_date: "2025-02-01"
+    description: "週間献立計画・管理機能"
+    tasks:
+      - "献立計画機能"
+      - "カレンダーUI"
+      - "レシピ割り当て機能"
+    
+  - name: "フル機能リリース"
+    target_date: "2025-03-01"
+    description: "推薦システム・管理機能完備"
+    tasks:
+      - "レシピ推薦システム"
+      - "管理者ダッシュボード"
+      - "データ同期機能"
+
+# 開発環境・ツール
+development:
+  setup_commands:
+    - "npm install"
+    - "npx prisma generate"
+    - "npx prisma db push"
+    - "npm run db:seed-rakuten"
+    - "npm run dev"
+    
+  testing_commands:
+    - "npm run test"
+    - "npm run test:e2e"
+    - "npm run lint"
+    - "npm run type-check"
+    
+  deployment_commands:
+    - "npm run build"
+    - "npm run start"
+    - "npx prisma migrate deploy"
+
+# 注意事項・メモ
+notes:
+  - "楽天APIキーの取得が必要（https://webservice.rakuten.co.jp/）"
+  - "本番環境では管理者パスワードを必ず変更すること"
+  - "APIレート制限に注意（1日1000リクエスト制限など）"
+  - "大量データ取得時はサーバーリソースを監視すること"
+  - "セキュリティ設定の定期的な見直しが必要" 
