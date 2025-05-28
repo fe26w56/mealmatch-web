@@ -49,7 +49,21 @@ export default function RecipeDetailPage() {
           }
         }
 
-        // 保存済みにない場合は、ランキングAPIから取得
+        // 管理者レシピAPIから取得を試す
+        const adminResponse = await fetch(`/api/recipes?search=${recipeId}&limit=1`)
+        if (adminResponse.ok) {
+          const adminData = await adminResponse.json()
+          const adminRecipes = adminData.recipes || adminData
+          const foundRecipe = adminRecipes.find((r: any) => r.recipeId === recipeId)
+          
+          if (foundRecipe) {
+            setRecipe(foundRecipe)
+            setLoading(false)
+            return
+          }
+        }
+
+        // 最後にランキングAPIから取得
         const rankingResponse = await fetch('/api/recipes/ranking?categoryId=30')
         if (rankingResponse.ok) {
           const recipes = await rankingResponse.json()
@@ -65,6 +79,8 @@ export default function RecipeDetailPage() {
             })
             router.push('/')
           }
+        } else {
+          throw new Error('Failed to fetch from all sources')
         }
       } catch (error) {
         console.error('Failed to fetch recipe detail:', error)
@@ -148,11 +164,11 @@ export default function RecipeDetailPage() {
             <Button 
               variant="ghost" 
               onClick={() => router.back()}
-              className="mr-2"
+              className="mr-3"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <h1 className="text-xl font-bold text-green-600">レシピ詳細</h1>
+            <h1 className="text-xl font-bold text-green-600">MealMatch</h1>
           </div>
         </header>
         <main className="flex-1 container px-4 py-6 flex items-center justify-center">
@@ -170,11 +186,11 @@ export default function RecipeDetailPage() {
             <Button 
               variant="ghost" 
               onClick={() => router.back()}
-              className="mr-2"
+              className="mr-3"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <h1 className="text-xl font-bold text-green-600">レシピ詳細</h1>
+            <h1 className="text-xl font-bold text-green-600">MealMatch</h1>
           </div>
         </header>
         <main className="flex-1 container px-4 py-6 text-center">
@@ -194,11 +210,11 @@ export default function RecipeDetailPage() {
             <Button 
               variant="ghost" 
               onClick={() => router.back()}
-              className="mr-2"
+              className="mr-3"
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <h1 className="text-xl font-bold text-green-600">レシピ詳細</h1>
+            <h1 className="text-xl font-bold text-green-600">MealMatch</h1>
           </div>
           <Button 
             onClick={handleSaveRecipe} 

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { RAKUTEN_CONFIG, getDefaultParams } from '@/lib/rakuten-config'
 import { mockCategories } from '@/lib/mock-recipes'
-import type { RecipeCategoryResponse } from '@/lib/types/recipe'
 
 // レシピカテゴリ一覧の取得
 export async function GET(request: Request) {
@@ -29,7 +28,7 @@ export async function GET(request: Request) {
       const response = await fetch(url)
       
       if (response.ok) {
-        const data: RecipeCategoryResponse = await response.json()
+        const data: any = await response.json()
         
         if (data.result && !data.error) {
           return NextResponse.json(data.result)

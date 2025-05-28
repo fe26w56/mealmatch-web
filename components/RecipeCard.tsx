@@ -1,26 +1,12 @@
-import { Card } from "@/components/ui/card"
-import { Clock, ChefHat, Trash2, Eye } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-
-interface Recipe {
-  id: string
-  recipeId?: string
-  recipeTitle: string
-  recipeDescription?: string
-  foodImageUrl?: string
-  recipeIndication?: string
-  shopName?: string
-  rank?: string
-  createdAt?: string
-  recipeMaterial?: string
-  recipeInstructions?: string
-  recipeUrl?: string
-}
+import { Clock, ChefHat, Eye, Trash2 } from "lucide-react"
+import { BaseRecipe } from '@/lib/types'
 
 interface RecipeCardProps {
-  recipe: Recipe
+  recipe: BaseRecipe
   variant?: 'default' | 'admin'
-  onView?: (recipe: Recipe) => void
+  onView?: (recipe: BaseRecipe) => void
   onDelete?: (recipeId: string) => void
   onClick?: () => void
   className?: string
@@ -32,7 +18,7 @@ export function RecipeCard({
   onView, 
   onDelete, 
   onClick,
-  className = "" 
+  className = ""
 }: RecipeCardProps) {
   const handleCardClick = () => {
     if (onClick) {
@@ -50,16 +36,16 @@ export function RecipeCard({
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (onDelete) {
-      onDelete(recipe.id)
+      onDelete(recipe.recipeId)
     }
   }
 
   return (
     <Card 
-      className={`overflow-hidden ${onClick ? 'cursor-pointer hover:shadow-md' : ''} transition-shadow ${className}`}
+      className={`overflow-hidden hover:shadow-md transition-shadow cursor-pointer ${className}`}
       onClick={handleCardClick}
     >
-      <div className="aspect-video relative">
+      <div className="aspect-square relative overflow-hidden">
         {recipe.foodImageUrl ? (
           <img
             src={recipe.foodImageUrl}
@@ -67,79 +53,54 @@ export function RecipeCard({
             className="w-full h-full object-cover"
             onError={(e) => {
               const target = e.target as HTMLImageElement
-              target.src = `https://via.placeholder.com/300x200/f0f0f0/999999?text=${encodeURIComponent(recipe.recipeTitle.charAt(0))}`
+              target.src = `https://via.placeholder.com/200x200/f0f0f0/999999?text=${encodeURIComponent(recipe.recipeTitle.charAt(0))}`
             }}
           />
         ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-            <ChefHat className="h-12 w-12 text-gray-400" />
-          </div>
-        )}
-        
-        {/* ランキングバッジ */}
-        {recipe.rank && (
-          <div className="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-            #{recipe.rank}
+          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+            <ChefHat className="w-12 h-12 text-gray-400" />
           </div>
         )}
       </div>
       
-      <div className="p-4">
-        <h3 className="font-semibold truncate text-sm md:text-base">{recipe.recipeTitle}</h3>
+      <CardContent className="p-3">
+        <h3 className="font-medium text-sm line-clamp-2 mb-2 min-h-[2.5rem]">
+          {recipe.recipeTitle}
+        </h3>
         
-        {recipe.recipeDescription && (
-          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-            {recipe.recipeDescription}
-          </p>
-        )}
-        
-        <div className="flex items-center justify-between mt-3">
-          <div className="flex items-center text-xs text-gray-500 space-x-3">
-            {recipe.recipeIndication && (
-              <span className="flex items-center">
-                <Clock className="w-3 h-3 mr-1" />
-                {recipe.recipeIndication}
-              </span>
-            )}
-            {recipe.shopName && (
-              <span className="truncate">
-                by {recipe.shopName}
-              </span>
-            )}
-          </div>
-          
-          {variant === 'admin' && (
-            <div className="flex gap-2">
-              {onView && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleViewClick}
-                  className="h-8 w-8 p-0"
-                >
-                  <Eye className="w-4 h-4" />
-                </Button>
-              )}
-              {onDelete && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleDeleteClick}
-                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              )}
+        <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+          {recipe.recipeIndication && (
+            <div className="flex items-center">
+              <Clock className="w-3 h-3 mr-1" />
+              <span>{recipe.recipeIndication}</span>
             </div>
           )}
+          {recipe.shopName && (
+            <span className="truncate ml-2">{recipe.shopName}</span>
+          )}
         </div>
-        
-        {variant === 'admin' && recipe.createdAt && (
-          <div className="text-xs text-gray-400 mt-2">
-            登録日: {new Date(recipe.createdAt).toLocaleDateString('ja-JP')}
+
+        {variant === 'admin' && (
+          <div className="flex gap-2 mt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={handleViewClick}
+            >
+              <Eye className="w-3 h-3 mr-1" />
+              詳細
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDeleteClick}
+            >
+              <Trash2 className="w-3 h-3" />
+            </Button>
           </div>
         )}
-      </div>
+      </CardContent>
     </Card>
   )
 } 

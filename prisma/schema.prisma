@@ -112,8 +112,9 @@ model MealPlanRecipe {
   savedRecipeId String
   dayOfWeek    Int         // 0=月曜日, 1=火曜日, ..., 6=日曜日
   mealType     String      // "breakfast", "lunch", "dinner"
+  order        Int         @default(0) // 同じ曜日・食事タイプ内での順序
   mealPlan     MealPlan    @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
   savedRecipe  SavedRecipe @relation(fields: [savedRecipeId], references: [id], onDelete: Cascade)
 
-  @@unique([mealPlanId, dayOfWeek, mealType])
+  // ユニーク制約を削除し、同じ曜日・食事タイプに複数レシピを許可
 }

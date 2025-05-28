@@ -32,14 +32,14 @@ interface User {
 
 interface Recipe {
   id: string
-  recipeId?: string
+  recipeId: string
   recipeTitle: string
   recipeDescription?: string
   foodImageUrl?: string
   recipeIndication?: string
   shopName?: string
   rank?: string
-  createdAt?: string
+  createdAt: string
   recipeMaterial?: string
   recipeInstructions?: string
   recipeUrl?: string
@@ -674,7 +674,7 @@ export default function AdminDashboard() {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold">管理者ダッシュボード</h1>
+            <h1 className="text-3xl font-bold">MealMatch - 管理者ダッシュボード</h1>
             <p className="text-gray-600">システム全体の管理と監視</p>
           </div>
         </div>

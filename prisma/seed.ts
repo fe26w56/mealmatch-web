@@ -270,20 +270,20 @@ async function main() {
   })
 
   if (!adminUser) {
-    // パスワードをハッシュ化
-    const hashedPassword = await hashPassword(adminPassword)
+  // パスワードをハッシュ化
+  const hashedPassword = await hashPassword(adminPassword)
 
-    // 管理者ユーザーを作成
+  // 管理者ユーザーを作成
     adminUser = await prisma.user.create({
-      data: {
-        email: adminEmail,
-        name: adminName,
-        password: hashedPassword,
-        role: adminRole,
-      },
-    })
+    data: {
+      email: adminEmail,
+      name: adminName,
+      password: hashedPassword,
+      role: adminRole,
+    },
+  })
 
-    console.log('✅ Admin user created:', adminEmail)
+  console.log('✅ Admin user created:', adminEmail)
   } else {
     console.log('✅ Admin user already exists:', adminEmail)
   }
@@ -329,8 +329,8 @@ async function main() {
 
       if (!existingRecipe) {
         // 楽天APIのデータを使用してレシピを作成
-        await prisma.savedRecipe.create({
-          data: {
+    await prisma.savedRecipe.create({
+      data: {
             recipeId: recipe.recipeId?.toString() || `rakuten_${Date.now()}_${index}`,
             recipeTitle: recipe.recipeTitle || 'タイトル不明',
             recipeDescription: recipe.recipeDescription || '',
@@ -340,10 +340,10 @@ async function main() {
             recipeInstructions: recipe.recipeInstructions || '',
             recipeUrl: recipe.recipeUrl || '',
             shopName: recipe.shopName || '楽天レシピ',
-            userId: adminUser.id,
-            liked: true
-          }
-        })
+        userId: adminUser.id,
+        liked: true
+      }
+    })
         createdCount++
       } else {
         skippedCount++

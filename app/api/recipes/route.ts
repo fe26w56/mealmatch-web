@@ -4,8 +4,10 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const limit = parseInt(searchParams.get('limit') || '20')
-    const offset = parseInt(searchParams.get('offset') || '0')
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '12')
+    const search = searchParams.get('search')
+    const sort = searchParams.get('sort') || 'newest'
     const shuffle = searchParams.get('shuffle') === 'true'
 
     // 管理者ユーザーを取得
@@ -18,11 +20,68 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Admin user not found' }, { status: 500 })
     }
 
-    // 管理者が作成したレシピのみを取得
+    // 検索条件を構築
+    const where: any = {
+      userId: adminUser.id
+    }
+
+    if (search && search.trim()) {
+      where.OR = [
+        {
+          recipeTitle: {
+            contains: search.trim(),
+            mode: 'insensitive'
+          }
+        },
+        {
+          recipeDescription: {
+            contains: search.trim(),
+            mode: 'insensitive'
+          }
+        },
+        {
+          shopName: {
+            contains: search.trim(),
+            mode: 'insensitive'
+          }
+        },
+        {
+          recipeMaterial: {
+            contains: search.trim(),
+            mode: 'insensitive'
+          }
+        }
+      ]
+    }
+
+    // ソート条件を構築
+    let orderBy: any = { createdAt: 'desc' }
+    switch (sort) {
+      case 'oldest':
+        orderBy = { createdAt: 'asc' }
+        break
+      case 'title':
+        orderBy = { recipeTitle: 'asc' }
+        break
+      case 'shop':
+        orderBy = { shopName: 'asc' }
+        break
+      case 'newest':
+      default:
+        orderBy = { createdAt: 'desc' }
+        break
+    }
+
+    // 総数を取得
+    const total = await prisma.savedRecipe.count({ where })
+
+    // ページネーション計算
+    const offset = (page - 1) * limit
+    const totalPages = Math.ceil(total / limit)
+
+    // レシピを取得
     let recipes = await prisma.savedRecipe.findMany({
-      where: {
-        userId: adminUser.id
-      },
+      where,
       select: {
         id: true,
         recipeId: true,
@@ -38,9 +97,7 @@ export async function GET(request: NextRequest) {
       },
       skip: offset,
       take: limit,
-      orderBy: {
-        createdAt: 'desc'
-      }
+      orderBy: shuffle ? undefined : orderBy
     })
 
     // シャッフルが要求された場合
@@ -48,7 +105,21 @@ export async function GET(request: NextRequest) {
       recipes = recipes.sort(() => Math.random() - 0.5)
     }
 
-    return NextResponse.json(recipes)
+    // レガシーサポート: limitとoffsetパラメータの場合は古い形式で返す
+    if (searchParams.has('offset') || (!searchParams.has('page') && !searchParams.has('search') && !searchParams.has('sort'))) {
+      return NextResponse.json(recipes)
+    }
+
+    // 新しい形式でレスポンス
+    return NextResponse.json({
+      recipes,
+      total,
+      page,
+      limit,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1
+    })
   } catch (error) {
     console.error('Failed to fetch recipes:', error)
     return NextResponse.json({ error: 'Failed to fetch recipes' }, { status: 500 })

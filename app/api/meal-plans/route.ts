@@ -28,6 +28,9 @@ export async function GET(request: Request) {
           include: {
             savedRecipe: true,
           },
+          orderBy: {
+            dayOfWeek: 'asc'
+          }
         },
       },
     })
@@ -51,8 +54,8 @@ export async function GET(request: Request) {
             recipes: {
               create: likedRecipes.slice(0, 5).map((recipe, index: number) => ({
                 savedRecipeId: recipe.id,
-                dayOfWeek: index, // 0=月曜日, 1=火曜日, ...
-                mealType: 'dinner', // 夕食として設定
+                dayOfWeek: index + 1, // 1=月曜日, 2=火曜日, ..., 5=金曜日
+                mealType: 'dinner',
               })),
             },
           },
@@ -61,6 +64,9 @@ export async function GET(request: Request) {
               include: {
                 savedRecipe: true,
               },
+              orderBy: {
+                dayOfWeek: 'asc'
+              }
             },
           },
         })
@@ -76,6 +82,9 @@ export async function GET(request: Request) {
               include: {
                 savedRecipe: true,
               },
+              orderBy: {
+                dayOfWeek: 'asc'
+              }
             },
           },
         })
@@ -102,20 +111,13 @@ export async function POST(request: Request) {
 
     const { mealPlanId, dayOfWeek, mealType, savedRecipeId } = await request.json()
 
-    const mealPlanRecipe = await prisma.mealPlanRecipe.upsert({
-      where: {
-        mealPlanId_dayOfWeek_mealType: {
-          mealPlanId,
-          dayOfWeek,
-          mealType,
-        },
-      },
-      update: { savedRecipeId },
-      create: {
+    // 新しいレシピを献立に追加
+    const mealPlanRecipe = await prisma.mealPlanRecipe.create({
+      data: {
         mealPlanId,
+        savedRecipeId,
         dayOfWeek,
         mealType,
-        savedRecipeId,
       },
       include: {
         savedRecipe: true,
@@ -124,15 +126,15 @@ export async function POST(request: Request) {
 
     return NextResponse.json(mealPlanRecipe)
   } catch (error) {
-    console.error('Failed to update meal plan:', error)
+    console.error('Failed to add recipe to meal plan:', error)
     return NextResponse.json(
-      { error: 'Failed to update meal plan' },
+      { error: 'Failed to add recipe to meal plan' },
       { status: 500 }
     )
   }
 }
 
-// 献立の並び替え
+// 献立の並び順を更新
 export async function PUT(request: Request) {
   try {
     const user = await getSessionUser(request)
@@ -142,35 +144,104 @@ export async function PUT(request: Request) {
 
     const { mealPlanId, reorderedRecipes } = await request.json()
 
-    // 既存の献立レシピを削除
-    await prisma.mealPlanRecipe.deleteMany({
+    // 献立の所有者確認
+    const mealPlan = await prisma.mealPlan.findFirst({
       where: {
-        mealPlanId,
+        id: mealPlanId,
+        userId: user.id,
       },
     })
 
-    // 新しい順序で献立レシピを作成
-    const newMealPlanRecipes = await prisma.$transaction(
-      reorderedRecipes.map((recipe: any, index: number) =>
-        prisma.mealPlanRecipe.create({
+    if (!mealPlan) {
+      return NextResponse.json({ error: 'Meal plan not found' }, { status: 404 })
+    }
+
+    // 既存のレシピを削除
+    await prisma.mealPlanRecipe.deleteMany({
+      where: { mealPlanId },
+    })
+
+    // 新しい順序でレシピを作成
+    const newRecipes = await Promise.all(
+      reorderedRecipes.map(async (recipe: { savedRecipeId: string }, index: number) => {
+        return prisma.mealPlanRecipe.create({
           data: {
             mealPlanId,
             savedRecipeId: recipe.savedRecipeId,
-            dayOfWeek: index,
+            dayOfWeek: Math.floor(index / 1) + 1, // 1日1レシピとして計算
             mealType: 'dinner',
           },
           include: {
             savedRecipe: true,
           },
         })
-      )
+      })
     )
 
-    return NextResponse.json(newMealPlanRecipes)
+    // 更新された献立を返す
+    const updatedMealPlan = await prisma.mealPlan.findFirst({
+      where: { id: mealPlanId },
+      include: {
+        recipes: {
+          include: {
+            savedRecipe: true,
+          },
+          orderBy: {
+            dayOfWeek: 'asc'
+          }
+        },
+      },
+    })
+
+    return NextResponse.json(updatedMealPlan)
   } catch (error) {
-    console.error('Failed to reorder meal plan:', error)
+    console.error('Failed to update meal plan:', error)
     return NextResponse.json(
-      { error: 'Failed to reorder meal plan' },
+      { error: 'Failed to update meal plan' },
+      { status: 500 }
+    )
+  }
+}
+
+// 献立からレシピを削除
+export async function DELETE(request: Request) {
+  try {
+    const user = await getSessionUser(request)
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const mealPlanRecipeId = searchParams.get('recipeId')
+
+    if (!mealPlanRecipeId) {
+      return NextResponse.json({ error: 'Recipe ID is required' }, { status: 400 })
+    }
+
+    // 献立レシピの所有者確認
+    const mealPlanRecipe = await prisma.mealPlanRecipe.findFirst({
+      where: {
+        id: mealPlanRecipeId,
+        mealPlan: {
+          userId: user.id,
+        },
+      },
+    })
+
+    if (!mealPlanRecipe) {
+      return NextResponse.json({ error: 'Recipe not found' }, { status: 404 })
+    }
+
+    // レシピを削除
+    await prisma.mealPlanRecipe.delete({
+      where: { id: mealPlanRecipeId },
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Failed to delete recipe from meal plan:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete recipe from meal plan' },
       { status: 500 }
     )
   }
